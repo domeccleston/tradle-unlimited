@@ -1,21 +1,16 @@
 import { useCallback, useState } from "react";
-import { Guess, loadAllGuesses, saveGuesses } from "../domain/guess";
+import { Guess, loadGuesses, saveGuesses } from "../domain/guess";
 
-export function useGuesses(
-  dayString: string
-): [Guess[], (guess: Guess) => void] {
-  const [guesses, setGuesses] = useState<Guess[]>(
-    loadAllGuesses()[dayString] ?? []
-  );
+export function useGuesses(): [Guess[], (guess: Guess) => void] {
+  const [guesses, setGuesses] = useState<Guess[]>(loadGuesses());
 
   const addGuess = useCallback(
     (newGuess: Guess) => {
       const newGuesses = [...guesses, newGuess];
-
       setGuesses(newGuesses);
-      saveGuesses(dayString, newGuesses);
+      saveGuesses(newGuesses);
     },
-    [dayString, guesses]
+    [guesses]
   );
 
   return [guesses, addGuess];

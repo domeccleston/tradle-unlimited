@@ -37,54 +37,45 @@ interface GameProps {
 
 export function Game({ settingsData }: GameProps) {
   const { t, i18n } = useTranslation();
-  const dayString = useMemo(getDayString, []);
-  const isAprilFools = dayString === "2022-04-01";
-
   const countryInputRef = useRef<HTMLInputElement>(null);
 
-  const countryData = useCountry(`${dayString}`);
-  let country = countryData[0];
-
-  if (isAprilFools) {
-    country = {
-      code: "AJ",
-      latitude: 42.546245,
-      longitude: 1.601554,
-      name: "Land of Oz",
-    };
-  }
-
-  const [ipData, setIpData] = useState(null);
-  const [won, setWon] = useState(false);
-  const [currentGuess, setCurrentGuess] = useState<string>("");
-  const [countryValue, setCountryValue] = useState<string>("");
-  const [guesses, addGuess] = useGuesses(dayString);
+  const [country] = useCountry();
+  const [guesses, addGuess] = useGuesses();
+  const [currentGuess, setCurrentGuess] = useState("");
+  const [countryValue, setCountryValue] = useState("");
+  const [won, setWon] = useState(() =>
+    guesses.some((guess) => guess.distance === 0)
+  );
   const [hideImageMode, setHideImageMode] = useMode(
     "hideImageMode",
-    dayString,
+    undefined,
     settingsData.noImageMode
   );
   const [rotationMode, setRotationMode] = useMode(
     "rotationMode",
-    dayString,
+    undefined,
     settingsData.rotationMode
   );
 
-  const gameEnded =
-    guesses.length === MAX_TRY_COUNT ||
-    guesses[guesses.length - 1]?.distance === 0;
+  const startNewGame = useCallback(() => {
+    localStorage.removeItem("currentGame");
+    localStorage.removeItem("currentCountry");
+    window.location.reload();
+  }, []);
+
+  const gameEnded = guesses.length === MAX_TRY_COUNT || won;
+  console.log({
+    guessesLength: guesses.length,
+    MAX_TRY_COUNT,
+    won,
+    gameEnded,
+  });
 
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (!country) return;
-      const getIpData = async () => {
-        const res = await axios.get("https://geolocation-db.com/json/");
-        setIpData(res.data);
-      };
-      const guessedCountry = isAprilFools
-        ? getFictionalCountryByName(currentGuess)
-        : getCountryByName(currentGuess);
+      const guessedCountry = getCountryByName(currentGuess);
 
       if (guessedCountry == null) {
         toast.error(t("unknownCountry"));
@@ -104,17 +95,12 @@ export function Game({ settingsData }: GameProps) {
 
       if (newGuess.distance === 0) {
         setWon(true);
-        getIpData();
       }
     },
-    [addGuess, country, currentGuess, t, isAprilFools]
+    [addGuess, country, currentGuess, t]
   );
 
   useEffect(() => {
-    const getIpData = async () => {
-      const res = await axios.get("https://geolocation-db.com/json/");
-      setIpData(res.data);
-    };
     if (
       guesses.length === MAX_TRY_COUNT &&
       guesses[guesses.length - 1].distance > 0
@@ -128,43 +114,15 @@ export function Game({ settingsData }: GameProps) {
           delay: 2000,
         });
       }
-      getIpData();
     }
   }, [country, guesses, i18n.resolvedLanguage]);
-
-  useEffect(() => {
-    if (ipData) {
-      axios
-        .post("/tradle/score", {
-          date: new Date(),
-          guesses,
-          ip: ipData,
-          answer: country,
-          won,
-        })
-        .catch(function (error) {
-          if (error.response) {
-            // Request made and server responded
-            console.log(
-              `⚠️ ${error.response.status}: Unable to post tradle score.`
-            );
-          } else if (error.request) {
-            // The request was made but no response was received
-            console.log(error.request);
-          } else {
-            // Something happened in setting up the request that triggered an Error
-            console.log("Error", error.message);
-          }
-        });
-    }
-  }, [guesses, ipData, won, country]);
 
   let iframeSrc = "https://oec.world/en/tradle/aprilfools.html";
   let oecLink = "https://oec.world/";
   const country3LetterCode = country?.code
     ? countryISOMapping[country.code].toLowerCase()
     : "";
-  if (!isAprilFools) {
+  if (true) {
     const oecCode = country?.oecCode
       ? country?.oecCode?.toLowerCase()
       : country3LetterCode;
@@ -183,7 +141,6 @@ export function Game({ settingsData }: GameProps) {
           {t("showCountry")}
         </button>
       )}
-      {/* <div className="my-1 mx-auto"> */}
       <h2 className="font-bold text-center">
         Guess which country exports these products!
       </h2>
@@ -226,20 +183,11 @@ export function Game({ settingsData }: GameProps) {
         guesses={guesses}
         settingsData={settingsData}
         countryInputRef={countryInputRef}
-        isAprilFools={isAprilFools}
+        isAprilFools={false}
       />
       <div className="my-2">
         {gameEnded ? (
           <>
-            <Share
-              guesses={guesses}
-              dayString={dayString}
-              settingsData={settingsData}
-              hideImageMode={hideImageMode}
-              rotationMode={rotationMode}
-              won={guesses[guesses.length - 1]?.distance === 0}
-              isAprilFools={isAprilFools}
-            />
             <a
               className="underline w-full text-center block mt-4 flex justify-center"
               href={oecLink}
@@ -262,13 +210,6 @@ export function Game({ settingsData }: GameProps) {
               </svg>
               {t("showOnGoogleMaps")}
             </a>
-            {isAprilFools ? (
-              <div className="w-full text-center block mt-4 flex flex-col justify-center text-2xl font-bold">
-                <div>🐶 🚲 🌪 🏚</div>
-                <div>Happy April Fools!</div>
-                <div>👠 🤖 🦁 🎍</div>
-              </div>
-            ) : null}
           </>
         ) : (
           <form onSubmit={handleSubmit}>
@@ -277,23 +218,25 @@ export function Game({ settingsData }: GameProps) {
                 countryValue={countryValue}
                 setCountryValue={setCountryValue}
                 setCurrentGuess={setCurrentGuess}
-                isAprilFools={isAprilFools}
+                isAprilFools={false}
               />
-              {/* <button
-                className="border-2 uppercase my-0.5 hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-slate-800 dark:active:bg-slate-700"
-                type="submit"
-              >
-                🌍 {t("guess")}
-              </button> */}
               <div className="text-left">
                 <button className="my-2 inline-block justify-end bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded items-center">
-                  {isAprilFools ? "🪄" : "🌍"} <span>Guess</span>
+                  🌍 <span>Guess</span>
                 </button>
               </div>
             </div>
           </form>
         )}
       </div>
+      {gameEnded && (
+        <button
+          className="mt-4 px-4 py-2 bg-oec-orange hover:bg-oec-yellow text-black font-bold rounded"
+          onClick={startNewGame}
+        >
+          {t("New game")}
+        </button>
+      )}
     </div>
   );
 }

@@ -38,7 +38,7 @@ interface GuessRowProps {
   index: number;
   guess?: Guess;
   settingsData: SettingsData;
-  countryInputRef?: React.RefObject<HTMLInputElement>;
+  countryInputRef: React.RefObject<HTMLInputElement> | null;
   isAprilFools?: boolean;
 }
 
@@ -72,9 +72,7 @@ export function GuessRow({
   }, [guess]);
 
   const handleClickOnEmptyRow = useCallback(() => {
-    if (countryInputRef?.current != null) {
-      countryInputRef?.current.focus();
-    }
+    countryInputRef?.current?.focus();
   }, [countryInputRef]);
 
   switch (animationState) {

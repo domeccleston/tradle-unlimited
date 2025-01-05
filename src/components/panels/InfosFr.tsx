@@ -30,6 +30,7 @@ export function InfosFr({ isOpen, close, settingsData }: InfosProps) {
         <div>
           <Guesses
             rowCount={1}
+            countryInputRef={null}
             guesses={[
               {
                 name: "Chili",
@@ -50,6 +51,7 @@ export function InfosFr({ isOpen, close, settingsData }: InfosProps) {
         <div>
           <Guesses
             rowCount={1}
+            countryInputRef={null}
             guesses={[
               {
                 name: "Finlande",
@@ -70,6 +72,7 @@ export function InfosFr({ isOpen, close, settingsData }: InfosProps) {
         <div>
           <Guesses
             rowCount={1}
+            countryInputRef={null}
             guesses={[
               {
                 name: "Liban",

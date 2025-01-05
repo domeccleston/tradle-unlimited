@@ -8,22 +8,17 @@ export interface Guess {
   country?: Country;
 }
 
-export function loadAllGuesses(): Record<string, Guess[]> {
-  const storedGuesses = localStorage.getItem("guesses");
-  return storedGuesses != null ? JSON.parse(storedGuesses) : {};
+// Replace loadAllGuesses and saveGuesses with simpler versions
+export function loadGuesses(): Guess[] {
+  const storedGuesses = localStorage.getItem("currentGame");
+  return storedGuesses != null ? JSON.parse(storedGuesses) : [];
 }
 
-export function saveGuesses(dayString: string, guesses: Guess[]): void {
-  const allGuesses = loadAllGuesses();
-  localStorage.setItem(
-    "guesses",
-    JSON.stringify({
-      ...allGuesses,
-      [dayString]: guesses,
-    })
-  );
+export function saveGuesses(guesses: Guess[]): void {
+  localStorage.setItem("currentGame", JSON.stringify(guesses));
 }
 
+// Keep OEC link function unchanged
 export function constructOecLink(country: Country) {
   const country3LetterCode = country?.code
     ? countryISOMapping[country.code].toLowerCase()

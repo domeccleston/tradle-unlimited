@@ -7,7 +7,7 @@ interface GuessesProps {
   rowCount: number;
   guesses: Guess[];
   settingsData: SettingsData;
-  countryInputRef?: React.RefObject<HTMLInputElement>;
+  countryInputRef: React.RefObject<HTMLInputElement> | null;
   isAprilFools?: boolean;
 }
 

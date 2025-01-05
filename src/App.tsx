@@ -7,7 +7,6 @@ import { Game } from "./components/Game";
 import { Infos } from "./components/panels/Infos";
 import { InfosFr } from "./components/panels/InfosFr";
 import { Settings } from "./components/panels/Settings";
-import { Stats } from "./components/panels/Stats";
 import { useSettings } from "./hooks/useSettings";
 
 function App() {
@@ -41,7 +40,7 @@ function App() {
         transition={Flip}
         theme={settingsData.theme}
         autoClose={5000}
-        bodyClassName="font-bold text-center"
+        className="font-bold text-center"
       />
       {i18n.resolvedLanguage === "fr" ? (
         <InfosFr
@@ -62,11 +61,11 @@ function App() {
         settingsData={settingsData}
         updateSettings={updateSettings}
       />
-      <Stats
+      {/* <Stats
         isOpen={statsOpen}
         close={() => setStatsOpen(false)}
         distanceUnit={settingsData.distanceUnit}
-      />
+      /> */}
       <div
         className="flex justify-center flex-auto relative"
         // style={{ background: "linear-gradient(#2c5363,#0f2027)" }}

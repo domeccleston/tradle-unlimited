@@ -1,37 +1,18 @@
-import { csv } from "d3-fetch";
-import { useEffect, useMemo, useState } from "react";
-import { countriesWithImage, Country } from "../domain/countries";
+import { useState, useEffect } from "react";
+import { Country, countriesWithImage } from "../domain/countries";
 
-interface DateCountry {
-  country: string;
-  date: string;
-}
+export function useCountry(): [Country | undefined] {
+  const [country, setCountry] = useState<Country | undefined>(() => {
+    // Check if we have a stored country for current game
+    const stored = localStorage.getItem("currentCountry");
+    if (stored) return JSON.parse(stored);
 
-export function useCountry(dayString: string): [Country | undefined] {
-  const [forcedCountryCode, setForcedCountryCode] = useState("");
+    // If not, pick a random one
+    const randomIndex = Math.floor(Math.random() * countriesWithImage.length);
+    const newCountry = countriesWithImage[randomIndex];
+    localStorage.setItem("currentCountry", JSON.stringify(newCountry));
+    return newCountry;
+  });
 
-  useEffect(() => {
-    csv("/en/tradle/data.csv", (d) => {
-      return { country: d.country, date: d.date };
-    }).then((data) => {
-      setForcedCountryCode(
-        data.length
-          ? (
-              data.find((el) => el.date === dayString) as DateCountry
-            )?.country.toUpperCase() || ""
-          : ""
-      );
-    });
-  }, [dayString]);
-
-  const country = useMemo(() => {
-    const forcedCountry =
-      forcedCountryCode !== ""
-        ? countriesWithImage.find(
-            (country) => country.code === forcedCountryCode
-          )
-        : undefined;
-    return forcedCountry;
-  }, [forcedCountryCode]);
   return [country];
 }
