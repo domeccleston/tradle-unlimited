@@ -220,9 +220,28 @@ export function Game({ settingsData }: GameProps) {
                 setCurrentGuess={setCurrentGuess}
                 isAprilFools={false}
               />
-              <div className="text-left">
-                <button className="my-2 inline-block justify-end bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded items-center">
+              <div className="text-left flex gap-2">
+                <button
+                  type="submit"
+                  className="my-2 inline-block justify-end bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded items-center"
+                >
                   🌍 <span>Guess</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (country) {
+                      toast.info(country.name.toUpperCase(), {
+                        autoClose: 2000,
+                      });
+                      localStorage.removeItem("currentCountry");
+                      localStorage.removeItem("currentGame");
+                      window.location.reload();
+                    }
+                  }}
+                  className="my-2 inline-block justify-end bg-red-300 hover:bg-red-400 text-gray-800 font-bold py-2 px-4 rounded items-center"
+                >
+                  ⏭️ <span>Skip</span>
                 </button>
               </div>
             </div>
